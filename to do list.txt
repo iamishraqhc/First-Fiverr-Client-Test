@@ -1,0 +1,38 @@
+I'm looking for a tool that research specific keyword in a list of websites, then it daily check if a specific keyword has been added to these websites. One by one. Tool must count the number of specific keyword for each website, then everyday it must check and count the same keyword for each website. When that keyword is added, it must send an email notification.
+
+
+1) research in ALL the sitemap a specific keyword, for example "bando di gara" - in all sitemaps/websites
+2) counts how many keywords is found for each website
+3) track it in excel, i have a template I can send you. each time is run it has to update this excel with these numbers
+4)each time run this tool, once finished to run, has to confrontate the number of these keywords for each website, with the time is run before. when there is discrepancy I need an email
+
+this tool logic is to get notified when a keyword is added to the website
+
+
+example:
+day 1
+keyword "school"
+
+website A day 1: counts 10 "schools" in all sitemap
+website B day 1: counts 5 "schools" in all sitemap
+website C day 1: counts 12 "schools" in all sitemap
+
+day 2
+keyword "school"
+
+website A day 1: counts 10 "schools" in all sitemap
+website B day 1: counts 6 "schools" in all sitemap
+website C day 1: counts 13 "schools" in all sitemap
+
+the tool match these numbers with the day before (day2-day1)
+
+so:
+website A: 10(day2) - 10(day1) = 0 discrepancy
+website B: 6(day2) - 10(day5) = 1 discrepancy (added keyword)
+website C: 13(day2) - 12(day1) = 1 discrepancy (added keyword)
+
+day3....
+
+day4.... and so on.
+
+SO, at day 2 websites "A" and website "B" added that keyword
