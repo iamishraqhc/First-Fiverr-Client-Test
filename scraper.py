@@ -1,9 +1,9 @@
 # Python3 code implementing web scraping using lxml
 
-import requests
+# import requests
 
 # import only html class
-from lxml import html
+# from lxml import html
 #
 # # url to scrape data from
 # url = 'http://www.graaho.net/'
@@ -43,14 +43,25 @@ import requests
 import pandas as pd
 import logging
 
-
+words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
 logging.basicConfig(filename='myapp.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',level=logging.INFO)
 logging.info('Started')
+logger = logging.getLogger(__name__)
+count = 0
 
+# siti web scuole || testwebsite
 rows = pd.read_csv('testwebsite.csv')
 for index, row in rows.iterrows():
     print(str(row['websites']))
+    try:
+        response = requests.get('http://' + row['websites']).text
 
-    response = requests.get('http://' + row['websites']).text
-    print(response.find('gov'))
-    logging.info(response.find('gov'))
+        for word in words:
+            print(response.find(word))
+            logging.info(response.find(word))
+            if response.find(word) > -1:
+                count = count + 1
+    except Exception as e:
+        logger.log(logging.ERROR,f'Exception from: start_driver {e}')
+        pass
+print(count)
