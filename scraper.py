@@ -54,6 +54,7 @@ rows = pd.read_csv('testwebsite.csv')
 for word in words:
     print("Scraping for ", word, '\n')
     # dictionary
+    words_to_append = {}
     for index, row in rows.iterrows():
         print(str(row['websites']))
         try:
