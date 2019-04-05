@@ -41,18 +41,23 @@
 
 import requests
 import pandas as pd
-import logging
+# import logging
 import datetime
 
-words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
-logging.basicConfig(filename='myapp.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',level=logging.INFO)
-logging.info('Started')
-logger = logging.getLogger(__name__)
+
+# logging.basicConfig(filename='myapp.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',level=logging.INFO)
+# logging.info('Started')
+# logger = logging.getLogger(__name__)
 count = 0
 
 # siti web scuole || testwebsite
+
+words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
 rows = pd.read_csv('testwebsite.csv')
-for word in words:
+
+file_name_excel = f'output.xlsx'
+writer = pd.ExcelWriter(file_name_excel)
+for i,word in enumerate(words):
     print("Scraping for ", word, '\n')
     # dictionary
     words_to_append = {}
@@ -61,14 +66,16 @@ for word in words:
         try:
             response = requests.get('http://' + row['websites']).text
             print(response.find(word))
-            logging.info(response.find(word))
-            words_to_append[word] = response.find(word)
+            words_to_append[row['websites']] = response.find(word)
         except Exception as e:
-            logger.log(logging.ERROR,f'Exception from: start_driver {e}')
+            # logger.log(logging.ERROR,f'Exception from: start_driver {e}')
             print("Bad Request")
-            words_to_append[word] = "Bad Request"
+            words_to_append[row['websites']] = "Bad Request"
             pass
-print(words_to_append)
+    keyword_data_frame = pd.DataFrame([words_to_append])
+    print(keyword_data_frame)
+    keyword_data_frame.to_excel(writer,f'Sheet{i}')
+writer.save()
 
 # for ind, row in rows.iterrowa():
 #     rows.loc[index, datetime.date.today()] = response.find(word)
