@@ -42,6 +42,7 @@
 import requests
 import pandas as pd
 import logging
+import datetime
 
 words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
 logging.basicConfig(filename='myapp.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',level=logging.INFO)
@@ -61,13 +62,13 @@ for word in words:
             response = requests.get('http://' + row['websites']).text
             print(response.find(word))
             logging.info(response.find(word))
-            if response.find(word) > -1:
-                count = count + 1
+            words_to_append[word] = response.find(word)
         except Exception as e:
             logger.log(logging.ERROR,f'Exception from: start_driver {e}')
-            print("Bad Website")
+            print("Bad Request")
+            words_to_append[word] = "Bad Request"
             pass
-print(count)
+print(words_to_append)
 
 # for ind, row in rows.iterrowa():
-#     rows.loc[ind, datetime.date] = response.find(word)
+#     rows.loc[index, datetime.date.today()] = response.find(word)
