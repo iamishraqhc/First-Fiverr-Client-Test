@@ -67,3 +67,6 @@ for word in words:
             print("Bad Website")
             pass
 print(count)
+
+# for ind, row in rows.iterrowa():
+#     rows.loc[ind, datetime.date] = response.find(word)
