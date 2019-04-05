@@ -51,17 +51,19 @@ count = 0
 
 # siti web scuole || testwebsite
 rows = pd.read_csv('testwebsite.csv')
-for index, row in rows.iterrows():
-    print(str(row['websites']))
-    try:
-        response = requests.get('http://' + row['websites']).text
-
-        for word in words:
+for word in words:
+    print("Scraping for ", word, '\n')
+    # dictionary
+    for index, row in rows.iterrows():
+        print(str(row['websites']))
+        try:
+            response = requests.get('http://' + row['websites']).text
             print(response.find(word))
             logging.info(response.find(word))
             if response.find(word) > -1:
                 count = count + 1
-    except Exception as e:
-        logger.log(logging.ERROR,f'Exception from: start_driver {e}')
-        pass
+        except Exception as e:
+            logger.log(logging.ERROR,f'Exception from: start_driver {e}')
+            print("Bad Website")
+            pass
 print(count)
