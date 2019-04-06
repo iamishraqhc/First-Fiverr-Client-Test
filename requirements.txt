@@ -27,3 +27,5 @@ webencodings==0.5.1
 wincertstore==0.2
 wrapt==1.10.11
 xlrd==1.2.0
+sendgrid
+python_http_client
