@@ -2,16 +2,15 @@ import requests
 import pandas as pd
 import datetime
 import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import logging
 
 now = datetime.datetime.now()
 todays_date = str(now).split()[0]
-previous_date = str(datetime.datetime.now()-datetime.timedelta(days=1)).split()[0]
+previous_date = str(datetime.datetime.now() - datetime.timedelta(days=1)).split()[0]
 
 words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
-rows = pd.read_csv('testwebsite.csv') # siti web scuole
-writer = pd.ExcelWriter('output.xlsx')
+rows = pd.read_csv(os.path.join('testwebsite.csv'))
+writer = pd.ExcelWriter(os.path.join('output.xlsx'))
 for i,word in enumerate(words):
     print("Scraping for ", word, '\n')
     websites = []
@@ -32,39 +31,34 @@ for i,word in enumerate(words):
             word_founds.append("Bad Request")
             pass
     # df = pd.read_excel('output.xlsx')  #, sheet_name=f'Sheet{i}')
-    if os.path.exists('./output.xlsx'):
-        df = pd.read_excel('output.xlsx')
-        df2 = pd.DataFrame({f"{todays_date}": word_founds})
-        df3 = df.join(df2)
-        print(df3)
-        df3.to_excel(writer, f'Sheet{i}', index=False)
+    if os.path.exists(os.path.join('output.xlsx')):
+        df = pd.read_excel(os.path.join('output.xlsx'))
+        if str(todays_date) in df.columns:
+            df1 = df.drop([str(todays_date)], axis=1)
+            df2 = pd.DataFrame({f"{todays_date}": word_founds})
+            df3 = df1.join(df2)
+            print(df3)
+            df3.to_excel(writer, f'Sheet{i}', index=False)
+        else:
+            pass
     else:
         keyword_data_frame = pd.DataFrame({"Websites": websites,f"{todays_date}":word_founds}) 
         print(keyword_data_frame)
         keyword_data_frame.to_excel(writer, f'Sheet{i}', index=False)
 writer.save()
 
-
+if os.path.exists(os.path.join('output.xlsx')):
+    logging.basicConfig(filename=os.path.join(
+        f'found_keywords_at_{str(now).split()[0]}.log'), format='%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
 for i,word in enumerate(words):
-    if os.path.exists('./output.xlsx'):
-        df = pd.read_excel('output.xlsx', sheet_name=f'Sheet{i}')
+    if os.path.exists(os.path.join('output.xlsx')):
+        df = pd.read_excel(os.path.join('output.xlsx'), sheet_name=f'Sheet{i}')
         if previous_date in df.columns:
             data = df[todays_date]-df[previous_date]
             for key, val in enumerate(data):
                 if val != 0:
-                    print('You are notified!!!')
+                    logging.warning(f'{df.loc[key,"Websites"]} ===> {word}')
 
-
-message = Mail(
-    from_email='ishraq_josephite@yahoo.com',
-    to_emails='ishraq.h.c@gmail.com',
-    subject='Sending with SendGrid is Fun',
-    html_content='<strong>and easy to do anywhere, even with Python</strong>')
-try:
-    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-    response = sg.send(message)
-    print(response.status_code)
-    print(response.body)
-    print(response.headers)
-except Exception as e:
-    print(e.message)
+if os.path.exists(os.path.join(f'found_keywords_at_{str(now).split()[0]}.log')):
+    file_name = f'found_keywords_at_{str(now).split()[0]}.log'
+    os.system(f'start {file_name}')
