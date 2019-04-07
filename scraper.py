@@ -1,81 +1,53 @@
-# Python3 code implementing web scraping using lxml
-
-# import requests
-
-# import only html class
-# from lxml import html
-#
-# # url to scrape data from
-# url = 'http://www.graaho.net/'
-#
-# # path to particular element
-# path = '//*[@id="service-para"]'
-#
-# # get response object
-# response = requests.get(url)
-#
-# # get byte string
-# byte_data = response.content
-#
-# # get filtered source code
-# source_code = html.fromstring(byte_data)
-#
-# # jump to preferred html element
-# tree = source_code.xpath(path)
-#
-# # print texts in first element in list
-# print(tree[0].text_content())
-
-# import csv
-#
-# with open('testwebsite.csv', 'r') as csvFile:
-#     reader = csv.reader(csvFile)
-#     for row in reader:
-#         print(type(str(row)))
-#         response = requests.get(str(row))
-#         print(response)
-#
-# csvFile.close()
-
-# import requests
-
 import requests
 import pandas as pd
-# import logging
 import datetime
+import os
 
-
-# logging.basicConfig(filename='myapp.log', format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',level=logging.INFO)
-# logging.info('Started')
-# logger = logging.getLogger(__name__)
-count = 0
-
-# siti web scuole || testwebsite
+now = datetime.datetime.now()
+todays_date = str(now).split()[0]
+previous_date = str(datetime.datetime.now()-datetime.timedelta(days=1)).split()[0]
 
 words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
 rows = pd.read_csv('testwebsite.csv')
-
-file_name_excel = f'output.xlsx'
-writer = pd.ExcelWriter(file_name_excel)
+writer = pd.ExcelWriter('output.xlsx')
 for i,word in enumerate(words):
     print("Scraping for ", word, '\n')
-    # dictionary
-    words_to_append = {}
+    websites = []
+    word_founds = []
     for index, row in rows.iterrows():
         print(str(row['websites']))
         try:
             response = requests.get('http://' + row['websites']).text
-            print(response.find(word))
-            words_to_append[row['websites']] = response.find(word)
+            result = response.find(word)
+            if result == -1:
+                result = 0
+            print(result)
+            websites.append(row['websites'])
+            word_founds.append(result)
         except Exception as e:
-            # logger.log(logging.ERROR,f'Exception from: start_driver {e}')
             print("Bad Request")
-            words_to_append[row['websites']] = "Bad Request"
+            websites.append(row['websites'])
+            word_founds.append("Bad Request")
             pass
-    keyword_data_frame = pd.DataFrame([words_to_append])
-    print(keyword_data_frame)
-    keyword_data_frame.to_excel(writer,f'Sheet{i}')
+    # df = pd.read_excel('output.xlsx')  #, sheet_name=f'Sheet{i}')
+    if os.path.exists('./output.xlsx'):
+        df = pd.read_excel('output.xlsx')
+        df2 = pd.DataFrame({f"{todays_date}": word_founds})
+        df3 = df.join(df2)
+        print(df3)
+        df3.to_excel(writer, f'Sheet{i}', index=False)
+    else:
+        keyword_data_frame = pd.DataFrame({"Websites": websites,f"{todays_date}":word_founds}) 
+        print(keyword_data_frame)
+        keyword_data_frame.to_excel(writer, f'Sheet{i}', index=False)
 writer.save()
 
-# for ind, row in rows.iterrowa():
-#     rows.loc[index, datetime.date.today()] = response.find(word)
+
+for i,word in enumerate(words):
+    if os.path.exists('./output.xlsx'):
+        df = pd.read_excel('output.xlsx', sheet_name=f'Sheet{i}')
+        if previous_date in df.columns:
+            data = df[todays_date]-df[previous_date]
+            for key, val in enumerate(data):
+                if val != 0:
+                    print('You are notified!!!')
