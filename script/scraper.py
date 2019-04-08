@@ -10,7 +10,7 @@ previous_date = str(datetime.datetime.now() -
                     datetime.timedelta(days=1)).split()[0]
 
 words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
-rows = pd.read_csv(os.path.join('sitemap_input.csv'))
+rows = pd.read_csv(os.path.join('script\\testwebsite.csv'))
 writer = pd.ExcelWriter(os.path.join('output.xlsx'))
 for i, word in enumerate(words):
     print("Scraping for ", word, '\n')
@@ -20,8 +20,11 @@ for i, word in enumerate(words):
         print(str(row['websites']))
         try:
             response = requests.get('http://' + row['websites']).text
-            result = response.find(word)
-            if result == -1:
+            result1 = response.find(word.lower())
+            result2 = response.find(word.upper())
+            result3 = response.find(word.capitalize())
+            result = result1 + result2 + result3
+            if result < 0:
                 result = 0
             print(result)
             websites.append(row['websites'])
