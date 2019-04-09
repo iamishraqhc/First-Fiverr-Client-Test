@@ -9,6 +9,8 @@ now = datetime.datetime.now()
 todays_date = str(now).split()[0]
 previous_date = str(datetime.datetime.now() -
                     datetime.timedelta(days=1)).split()[0]
+                
+print("Welcome to Keywords Scraper v0.20.3")
 
 # New code snippet 
 def scrape(search_url):
@@ -48,7 +50,9 @@ def crawl(search_url):
     return link_list
 
 
-words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
+# words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
+words = pd.read_csv(os.path.join('keywords_input.csv'))
+words = [str(row['keywords']) for index, row in words.iterrows()]
 rows = pd.read_csv(os.path.join('testwebsite.csv'))
 writer = pd.ExcelWriter(os.path.join('output.xlsx'))
 for i, word in enumerate(words):
