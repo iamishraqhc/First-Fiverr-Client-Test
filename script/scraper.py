@@ -20,9 +20,9 @@ for i, word in enumerate(words):
         print(str(row['websites']))
         try:
             response = requests.get('http://' + row['websites']).text
-            result1 = response.find(word.lower())
-            result2 = response.find(word.upper())
-            result3 = response.find(word.capitalize())
+            result1 = response.count(word.lower())
+            result2 = response.count(word.upper())
+            result3 = response.count(word.capitalize())
             result = result1 + result2 + result3
             if result < 0:
                 result = 0
