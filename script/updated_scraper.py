@@ -26,9 +26,12 @@ def crawl(search_url):
         response = requests.get(search_url)
     else:
         response = requests.get('http://' + search_url)
-    
+
     link_list = []
-    if response.status_code == response.codes.ok:
+    print(response.status_code)
+    print("something")
+    if response.status_code == 200:
+        print('hi')
         soup = BeautifulSoup(response.content,"lxml")
         links = soup.find_all('a')
         for link in links:
@@ -48,16 +51,20 @@ for i, word in enumerate(words):
         print(str(row['websites']))
         try:
             total_result = 0 ## Changes start
-            crawl_domain_links = crawl(str(row['websites']))  
-
+            crawl_domain_links = crawl(row['websites'])
+            # print(crawl_domain_links)
             if crawl_domain_links:
-                print(f"scraping {len(crawl_domain_links)} website pages under this domain: {str(row['websites'])}")
+                # print(f"scraping {len(crawl_domain_links)} website pages under this domain: {str(row['websites'])}")
                 crawl_domain_links.append(str(row['websites']))
+
                 for link in crawl_domain_links:
-                    raw_text = scrape(link)
-                    raw_text = raw_text.lower()
-                    word = word.lower()
-                    total_result += raw_text.count(word)   ### Changes end
+                    try:
+                        raw_text = scrape(link)
+                        raw_text = raw_text.lower()
+                        word = word.lower()
+                        total_result += raw_text.count(word)   ### Changes end
+                    except Exception as e2:
+                        pass
             # response = requests.get('http://' + row['websites']).text
             # result1 = response.find(word.lower())
             # result2 = response.find(word.upper())
