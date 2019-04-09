@@ -13,12 +13,14 @@ previous_date = str(datetime.datetime.now() -
 # New code snippet 
 def scrape(search_url):
     """ Scrape raw text from given link and returns only contents """
-
-    if 'http://' in search_url or 'https://' in search_url:
-        response = requests.get(search_url).text
-    else:
-        response = requests.get('http://' + search_url).text
-    return response
+    try:
+        if 'http://' in search_url or 'https://' in search_url:
+            response = requests.get(search_url).text
+        else:
+            response = requests.get('http://' + search_url).text
+        return response
+    except Exception as e:
+        print(f"Got this exception from scraper: {e}")
 
 def crawl(search_url):
     """ Crawl all the links in the given domain and returns as a list """
@@ -29,19 +31,25 @@ def crawl(search_url):
 
     link_list = []
     print(response.status_code)
-    print("something")
     if response.status_code == 200:
-        print('hi')
         soup = BeautifulSoup(response.content,"lxml")
         links = soup.find_all('a')
+        links = [a for a in links if "href" in str(a)]
         for link in links:
-            link_list.append(link['href'])
+            # print(link)
+            if search_url in link['href']:
+                link_list.append(link['href'])
+            else:
+                if "www" in link['href']:
+                    pass
+                else:
+                    link_list.append(search_url + link['href'])
         return link_list
     return link_list
 
 
 words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
-rows = pd.read_csv(os.path.join('script\\testwebsite.csv'))
+rows = pd.read_csv(os.path.join('testwebsite.csv'))
 writer = pd.ExcelWriter(os.path.join('output.xlsx'))
 for i, word in enumerate(words):
     print("Scraping for ", word, '\n')
@@ -49,38 +57,40 @@ for i, word in enumerate(words):
     word_founds = []
     for index, row in rows.iterrows():
         print(str(row['websites']))
-        try:
-            total_result = 0 ## Changes start
-            crawl_domain_links = crawl(row['websites'])
-            # print(crawl_domain_links)
-            if crawl_domain_links:
-                # print(f"scraping {len(crawl_domain_links)} website pages under this domain: {str(row['websites'])}")
-                crawl_domain_links.append(str(row['websites']))
-
-                for link in crawl_domain_links:
-                    try:
-                        raw_text = scrape(link)
-                        raw_text = raw_text.lower()
-                        word = word.lower()
-                        total_result += raw_text.count(word)   ### Changes end
-                    except Exception as e2:
-                        pass
-            # response = requests.get('http://' + row['websites']).text
-            # result1 = response.find(word.lower())
-            # result2 = response.find(word.upper())
-            # result3 = response.find(word.capitalize())
-            # result = result1 + result2 + result3
-            result = total_result
-            if result < 0:
-                result = 0
-            print(result)
-            websites.append(row['websites'])
-            word_founds.append(result)
-        except Exception as e:
-            print("Bad Request")
-            websites.append(row['websites'])
-            word_founds.append("Bad Request")
-            pass
+        # try:
+        total_result = 0 ## Changes start
+        crawl_domain_links = crawl(row['websites'])
+        # print(crawl_domain_links)
+        if crawl_domain_links:
+            print(f"scraping {len(crawl_domain_links)} website pages under this domain: {str(row['websites'])}")
+            crawl_domain_links.append(str(row['websites']))
+            count = 0
+            for link in crawl_domain_links:
+                print(f" Counting on website no. : {count}")
+                count += 1
+                try:
+                    raw_text = scrape(link)
+                    raw_text = raw_text.lower()
+                    word = word.lower()
+                    total_result += raw_text.count(word)   ### Changes end
+                except Exception as e2:
+                    print(f" Got exception from scraper for loop: {e2}")
+        # response = requests.get('http://' + row['websites']).text
+        # result1 = response.find(word.lower())
+        # result2 = response.find(word.upper())
+        # result3 = response.find(word.capitalize())
+        # result = result1 + result2 + result3
+        result = total_result
+        if result < 0:
+            result = 0
+        print(result)
+        websites.append(row['websites'])
+        word_founds.append(result)
+        # except Exception as e:
+        #     print("Bad Request")
+        #     websites.append(row['websites'])
+        #     word_founds.append("Bad Request")
+        #     pass
             
     if os.path.exists(os.path.join('output.xlsx')):
         df = pd.read_excel(os.path.join('output.xlsx'))
