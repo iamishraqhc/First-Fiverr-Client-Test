@@ -4,11 +4,22 @@ import datetime
 import os
 import logging
 from bs4 import BeautifulSoup
+import re
 
 now = datetime.datetime.now()
 todays_date = str(now).split()[0]
 previous_date = str(datetime.datetime.now() -
                     datetime.timedelta(days=1)).split()[0]
+
+headers = {
+    'Accept-Encoding': 'gzip, deflate, sdch',
+    'Accept-Language': 'en-US,en;q=0.8',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Cache-Control': 'max-age=0',
+    'Connection': 'keep-alive',
+}
                 
 print("Welcome to Keywords Scraper v0.20.3")
 
@@ -17,19 +28,23 @@ def scrape(search_url):
     """ Scrape raw text from given link and returns only contents """
     try:
         if 'http://' in search_url or 'https://' in search_url:
-            response = requests.get(search_url).text
+            response = requests.get(search_url,headers=headers).text
         else:
-            response = requests.get('http://' + search_url).text
+            response = requests.get('http://' + search_url,headers=headers).text
         return response
     except Exception as e:
         print(f"Got this exception from scraper: {e}")
 
 def crawl(search_url):
     """ Crawl all the links in the given domain and returns as a list """
-    if 'http://' in search_url or 'https://' in search_url:
-        response = requests.get(search_url)
-    else:
-        response = requests.get('http://' + search_url)
+    try:
+        if 'http://' in search_url or 'https://' in search_url:
+            response = requests.get(search_url,headers=headers)
+        else:
+            response = requests.get('http://' + search_url, headers=headers)
+    except Exception as e:
+        print(f"Got this exception from crawl request function: {e}")
+        return None 
 
     link_list = []
     print(response.status_code)
@@ -42,10 +57,17 @@ def crawl(search_url):
             if search_url in link['href']:
                 link_list.append(link['href'])
             else:
-                if "www" in link['href']:
+                exp = re.match(r'^[a-zA-Z\d-]{,63}(\.[a-zA-Z\d-]{,63}).$',link['href'])
+                if exp:
+                    print(exp.groups())
                     pass
                 else:
-                    link_list.append(search_url + link['href'])
+                    if link['href'].startswith('/'):
+                        print(link['href'])
+                        link_list.append(search_url + link['href'])
+                    else:
+                        print(link['href'])
+                        pass
         return link_list
     return link_list
 
@@ -74,9 +96,12 @@ for i, word in enumerate(words):
                 count += 1
                 try:
                     raw_text = scrape(link)
-                    raw_text = raw_text.lower()
-                    word = word.lower()
-                    total_result += raw_text.count(word)   ### Changes end
+                    if raw_text is not None:
+                        raw_text = raw_text.lower()
+                        word = word.lower()
+                        total_result += raw_text.count(word)
+                    else:
+                        pass   ### Changes end
                 except Exception as e2:
                     print(f" Got exception from scraper for loop: {e2}")
         # response = requests.get('http://' + row['websites']).text
