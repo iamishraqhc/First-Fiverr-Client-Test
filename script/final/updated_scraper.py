@@ -73,9 +73,9 @@ def crawl(search_url):
 
 
 # words = ['bando di gara', 'bando', 'gara', 'diario scolastico', 'diari']
-words = pd.read_csv(os.path.join('keywords_input.csv'))
+words = pd.read_excel(os.path.join('keywords_input.xlsx'))
 words = [str(row['keywords']) for index, row in words.iterrows()]
-rows = pd.read_csv(os.path.join('sitemap_input.csv'))
+rows = pd.read_excel(os.path.join('sitemap_input.xlsx'))
 writer = pd.ExcelWriter(os.path.join('output.xlsx'))
 for i, word in enumerate(words):
     print("Scraping for ", word, '\n')
